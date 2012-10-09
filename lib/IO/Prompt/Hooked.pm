@@ -82,7 +82,7 @@ sub _hooked_prompt {
     = @_;
 
   return $default
-    if defined $tries && $tries == 0 && defined $default
+    if defined $tries && $tries == 0 && defined $default;
 
   while( $tries ) {
 
