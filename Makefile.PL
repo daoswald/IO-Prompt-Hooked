@@ -24,7 +24,7 @@ WriteMakefile(
     PREREQ_PM => {
 	'Params::Smart'	   => '0.08',
         'parent'           => '0.225',
-        'IO::Prompt::Tiny' => '0.01',
+        'IO::Prompt::Tiny' => '0.001',
     },
     META_MERGE => {
         provides => {
