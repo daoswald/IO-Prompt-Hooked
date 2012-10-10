@@ -31,6 +31,7 @@ sub prompt {
 sub terminate_input {
   no warnings 'exiting';
   last;
+  # Return, here, would be pointless.
 }
 
 sub _unpack_prompt_params {
@@ -45,11 +46,17 @@ sub _unpack_prompt_params {
     }
   }
 
+  # Error has to exist if 'validate' is set.
+  if( exists $args{validate} && ! exists $args{error} ) {
+    $args{error} = sub { q{} };
+  }
+
   # Error can be passed a string or a subref.
-  if( exists $args{error} && ref $args{error} ne 'CODE' ) {
+  if( exists $args{error} && ref($args{error}) ne 'CODE' ) {
     my $message = $args{error};
     $args{error} = sub { $message };
   }
+
   
   return @args{ qw( message default tries validate error escape ) };
 }
@@ -71,10 +78,10 @@ sub _hooked_prompt {
     last if $escape_cb->($raw, $tries);
 
     return $raw if $validate_cb->($raw, $tries);
-
+    
     if ( my $error_msg = $error_cb->($raw, $tries)
+         and IO::Prompt::Tiny::_is_interactive()
          and ! $ENV{PERL_MM_USE_DEFAULT}
-         and ! IO::Prompt::Tiny::_is_interactive()
     ) {
       print $error_msg;
     }
@@ -91,7 +98,7 @@ __END__
 
 =head1 NAME
 
-IO::Prompt::Hooked - Simple prompts with validation hooks.
+IO::Prompt::Hooked - Simple prompting with validation hooks.
 
 =head1 SYNOPSIS
 
@@ -283,8 +290,7 @@ limit is imposed.
                      error    => "Invalid input.\n" );
 
     $input = prompt( message  => 'Your age?',
-                     validate => qr/^[01]?[0-9]{1,2}$/
-                     },
+                     validate => qr/^[01]?[0-9]{1,2}$/,
                      error    => sub {
                        my( $raw, $tries ) = @_;
                        return 'Roman numerals not allowed'
@@ -303,6 +309,8 @@ The callback will only be invoked if the user input fails to validate.  Output
 will be suppressed if the session is interactive, or if the environment variable
 C<PERL_MM_USE_DEFAULT> is set.
 
+If C<error> is omitted, and a validation fails, there will be no error message.
+
 =head4 C<escape>
 
     $input = prompt( message  => 'True or false? (T, F, or S to skip.)',
@@ -312,7 +320,8 @@ C<PERL_MM_USE_DEFAULT> is set.
 
 The C<escape> field accepts a regular expression object, or a subroutine
 reference to be used as a callback.  If the regex matches, or the callback
-returns true, C<prompt()> returns C<undef> immediately.
+returns true, C<prompt()> returns C<undef> immediately.  C<default> will be
+ignored.
 
 As with the other callbacks, the escape callback is invoked as
 C<< $escape_cb->( $raw, $tries ) >>.  The primary use is to give the user an
@@ -333,6 +342,11 @@ This module should be highly portable.  The environment variable
 C<PERL_MM_USE_DEFAULT> may be set to prevent L<IO::Prompt::Hooked> from
 prompting interactively.
 
+This module is expected to work exactly like IO::Prompt::Tiny when invoked in
+positional parameter (non-named-parameter) mode.  For regression testing the
+test suite validates behavior against the IO::Prompt::Tiny tests.  Overall
+coverage is just under 95%.
+
 =head1 DEPENDENCIES
 
 This module has two non-core dependencies: L<Params::Smart>, and
@@ -344,14 +358,57 @@ No known incompatibilities.
 
 =head1 SEE ALSO
 
+L<IO::Prompt::Tiny>, L<IO::Prompt>
+
 =head1 AUTHOR
+
+David Oswald C<< <davido at cpan dot org> >>
 
 =head1 DIAGNOSTICS
 
 =head1 SUPPORT
 
+You can find documentation for this module with the perldoc command.
+
+    perldoc IO::Prompt::Hooked
+
+This module is maintained in a public repo at Github. You may look for
+information at:
+
+=over 4
+
+=item * Github: Development is hosted on Github at:
+
+L<http://www.github.com/daoswald/IO-Prompt-Hooked>
+
+=item * RT: CPAN's request tracker (report bugs here)
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=IO-Prompt-Hooked>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/IO-Prompt-Hooked>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/IO-Prompt-Hooked>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/IO-Prompt-Hooked/>
+
+=back
+
 =head1 ACKNOWLEDGEMENTS
 
 =head1 LICENSE AND COPYRIGHT
+
+Copyright 2012 David Oswald.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
 
 =cut

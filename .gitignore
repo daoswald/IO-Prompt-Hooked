@@ -13,3 +13,5 @@ grammar/pm_to_blib
 pm_to_blib
 Inline-CPP-*.tar.gz
 ilcpp.diff
+cover_db
+

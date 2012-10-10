@@ -22,6 +22,9 @@ our $TEST_RESULT;
       my ( $message, $default ) = @_;
       $TEST_MESSAGE = $message;
       $TEST_DEFAULT = $default;
+      if( $ENV{PERL_MM_USE_DEFAULT} ) {
+        return defined $default ? $default : EMPTY_STRING;
+      }
       my $input =
           length  $TEST_INPUT ? $TEST_INPUT
         : defined $default    ? $default
@@ -102,6 +105,8 @@ is( prompt( message => 'Hello world.' ), EMPTY_STRING,
 
 }
 
+# Test escape mechanism.
+
 $TEST_INPUT = "\t";
 is( prompt( message  => 'Hello',
             default  => 'world',
@@ -109,6 +114,16 @@ is( prompt( message  => 'Hello',
             escape   => sub{ $_[0] =~ qr/\t/ },
     ), undef, 'Escape bypasses validation and returns undef.'
 );
+
+undef $TEST_INPUT;
+is( prompt( message  => 'Hello',
+            default  => 'world',
+            validate => sub {0},
+            tries    => 2,
+            escape   => sub{0},
+    ), undef, 'Negative RV for escape CB always returns undef.' );
+
+# Test terminate_input().
 
 {
   $TEST_INPUT = 'Invalid';
@@ -125,7 +140,58 @@ is( prompt( message  => 'Hello',
   is( $test_tries, 1, 'Error may break out of loop.' );
 }
 
-subtest 'Testing POD synopsis' => sub {
+# Test hashref params.
+
+$TEST_INPUT = 'yes';
+is( prompt( { message => 'hello' } ), 'yes',
+    'Params may be a hashref.' );
+
+
+# Test zero tries.
+
+is( prompt( { message => 'hello', validate => qr/^n/i, tries => 0 } ), undef,
+    'Tries==0 no-ops' );
+
+# Test non-interactive.
+
+{
+  $TEST_INPUT = 'yes';
+  local $ENV{PERL_MM_USE_DEFAULT} = 1;
+  is( prompt( message => 'hello', default => 'no' ), 'no',
+      'Non-interactive sessions use default.' );
+  is( prompt( message => 'hello', validate => qr/^n/i,
+              error => '#test error', tries => 2 ), undef,
+      'Non-printing error branch.' );
+}
+
+# Test interactive, validated with regex, one try, invalid input.
+
+is( prompt(
+      message => 'hello', validate => qr/^n/i,
+      error => "#test error (expected)\n",   tries => 1 ),
+      undef, 'Printing error branch.'
+);
+
+{
+  no warnings 'redefine';
+  local *IO::Prompt::Tiny::_is_interactive = sub { 0 };
+  is( prompt(
+        validate => qr/^n/,
+        error    => "Test error (shouldn't see)\n",
+        tries    => 1,
+      ), undef, "Shouldn't print when non-interactive" );
+}
+
+# Test escape sequence as regex.
+
+undef $TEST_INPUT;
+is( prompt( message => 'hello', default => 'a', escape => qr/a/ ),
+    undef, 'Regex escape.' );
+
+
+# Test POD SYNOPSIS code examples.
+
+subtest 'POD synopsis' => sub {
 
     my $input;
 
@@ -208,6 +274,133 @@ subtest 'Testing POD synopsis' => sub {
     is( $test_tries, 2, 'terminate_input() breaks out of loop early.' );
     
     done_testing();
+};
+
+# Test POD subroutine examples.
+
+subtest 'POD subroutine examples' => sub {
+
+  # prompt "Just like IO::Prompt::Tiny"
+  $TEST_INPUT = 'world';
+  my $input = prompt( 'Prompt message' );
+  is( $input, 'world', 'Basic, single param.' );
+
+  $input = prompt( 'Prompt message', 'Default value' );
+  is( $input, 'world', 'Basic, two params, input supplied.' );
+
+  undef $TEST_INPUT;
+  $input = prompt( 'Prompt message', 'Default value' );
+  is( $input, 'Default value', 'Basic, two params, default used.' );
+
+  # prompt "Or not... (named parameters)"
+
+  undef $TEST_INPUT;
+  $input = prompt(
+    message  => 'Please enter an integer between 0 and 255 ("A" to abort)',
+    default  => '0',
+    tries    => 5,
+    validate => sub {
+      my $raw = shift;
+      return $raw =~ /^[0-9]+$/ && $raw >= 0 && $raw <= 255;
+    },
+    escape   => qr/^A$/i,
+    error    => sub {
+      my( $raw, $tries ) = @_;
+      return "# Invalid input. You have $tries attempts remaining.";
+    },
+  );
+  is( $input, '0', 'named parameters example, got default.' );
+
+  # message
+  
+  $TEST_INPUT = "hello";
+  $input = prompt( message => 'Enter your first name' );
+  is( $input, 'hello', 'message example returned input.' );
+
+  # default
+
+  $input = prompt( message => 'Favorite color', default => 'green' );
+  is( $input, 'hello', 'default example returns input.' );
+  undef $TEST_INPUT;
+  $input = prompt( message => 'Favorite color', default => 'green' );
+  is( $input, 'green', 'default example returned default.' ); 
+
+  # validate
+
+  $TEST_INPUT = 'hello';
+
+  $input = prompt(message => 'Enter a word', validate => qr/^\w+$/);
+  is( $input, 'hello', 'validate example with qr// passes good input.' );
+
+  $input = prompt(
+             message  => 'Enter a word',
+             validate => sub {
+               my( $raw, $tries_remaining ) = @_;
+               return $raw =~ m/^\w+$/
+            } );
+  is( $input, 'hello', 'validate example with subref passes good input.' );
+
+  $TEST_INPUT = '!@#$%';
+
+  $input = prompt(message => 'Enter a word', validate => qr/^\w+$/, tries => 1);
+  is( $input, undef, 'validate example with qr// rejects bad input.' );
+
+  $input = prompt(
+             message  => 'Enter a word',
+             validate => sub {
+               my( $raw, $tries_remaining ) = @_;
+               return $raw =~ m/^\w+$/
+             },
+             tries => 1 );
+  is( $input, undef, 'validate example with subref rejects bad input.' );
+
+  # tries
+
+  $TEST_INPUT = 'garbage';
+
+  $input = prompt( message  => 'Proceed?',
+                   default  => 'y',
+                   validate => qr/^[yn]$/i,
+                   tries    => 5,
+                   error    => "#Invalid input.(expected)\n" );
+  is( $input, undef, 'tries example rejects bad input, and "tries" out.' );
+
+  undef $TEST_INPUT;
+
+  $input = prompt( message  => 'Proceed?',
+                   default  => 'y',
+                   validate => qr/^[yn]$/i,
+                   tries    => 5,
+                   error    => "#Invalid input.(expected)\n" );
+  is( $input, 'y', 'tries example passes good input.' );
+
+  # error
+
+  $TEST_INPUT = '444';
+  $input = prompt( message => 'Your age?',
+                   validate => qr/^[01]?[0-9]{1,2}$/,
+                   tries    => 5,
+                   error    => sub {
+                     my( $raw, $tries ) = @_;
+                     return 'Roman numerals not allowed'
+                       if $raw =~ qr/^[IVXLCDM]+$/i;
+                     return 'Age must be specified in base-10.'
+                       if $raw =~ qr/^\p{Hex}$/;
+                     return "#Invalid input.(expected)\n"
+                   }
+           );
+  is( $input, undef, 'error example rejects bad input, invoking error cb.' );
+
+  # escape
+
+  $TEST_INPUT = 's';
+  $input = prompt( message  => 'True or false? (T, F, or S to skip.)',
+                   validate => qr/^[tf]$/i,
+                   error    => "Invalid input.\n",
+                   escape   => qr/^s$/i );
+  is( $input, undef, 'escape example short-circuits.' );
+  
+  done_testing();
 };
 
 done_testing();
