@@ -1,4 +1,8 @@
 Revision history for List-BinarySearch
+0.02    October 11, 2012 10:28 PDT
+    - Localized and unset the PERL_MM_USE_DEFAULT in two tests where
+      smoke testers might have been running with it set, thus breaking
+      the tests.
 
 0.01    October 9, 2012 14:30 PDT
     - Initial release.
