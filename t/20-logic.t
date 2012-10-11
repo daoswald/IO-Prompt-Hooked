@@ -26,7 +26,7 @@ our $TEST_RESULT;
         return defined $default ? $default : EMPTY_STRING;
       }
       my $input =
-          length  $TEST_INPUT ? $TEST_INPUT
+          ( defined $TEST_INPUT && length  $TEST_INPUT ) ? $TEST_INPUT
         : defined $default    ? $default
         :                       EMPTY_STRING;
       return $input;
