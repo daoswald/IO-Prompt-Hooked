@@ -22,7 +22,7 @@ WriteMakefile(
         'English'    => '0',                # Core.
     },
     PREREQ_PM => {
-        'Params::Smart'	   => '0.08',
+        'Params::Smart'    => '0.08',
         'parent'           => '0.225',
         'IO::Prompt::Tiny' => '0.001',
     },
@@ -30,7 +30,7 @@ WriteMakefile(
         provides => {
             'IO::Prompt::Hooked' => {
                 file    => 'lib/IO/Prompt/Hooked.pm',
-                version => '0.02',
+                version => '0.03',
             },
         },
     },

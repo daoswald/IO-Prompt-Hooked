@@ -6,7 +6,7 @@ use warnings;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use parent 'Exporter';
 
@@ -15,79 +15,90 @@ our @EXPORT_OK = qw( terminate_input );
 
 # Template for Params::Smart validation.
 my @params = (
-  { name => 'message',   required => 0,                                    },
-  { name => 'default',   required => 0,                                    },
-  { name => 'tries',     required => 0, name_only => 1, default => -1      },
-  { name => 'validate',  required => 0, name_only => 1, default => sub {1} },
-  { name => 'error',     required => 0, name_only => 1                     },
-  { name => 'escape',    required => 0, name_only => 1, default => sub {0} },
+    { name => 'message', required => 0, },
+    { name => 'default', required => 0, },
+    { name => 'tries',   required => 0, name_only => 1, default => -1 },
+    {
+        name      => 'validate',
+        required  => 0,
+        name_only => 1,
+        default   => sub { 1 }
+    },
+    { name => 'error', required => 0, name_only => 1 },
+    {
+        name      => 'escape',
+        required  => 0,
+        name_only => 1,
+        default   => sub { 0 }
+    },
 );
 
 sub prompt {
-  my @params = _unpack_prompt_params( @_ ); 
-  return _hooked_prompt( @params );
+    my @params = _unpack_prompt_params(@_);
+    return _hooked_prompt(@params);
 }
 
 sub terminate_input {
-  no warnings 'exiting';
-  last;
-  # Return, here, would be pointless.
+    no warnings 'exiting';
+    last;
+
+    # Return, here, would be pointless.
 }
 
 sub _unpack_prompt_params {
-  my @args = ref $_[0] ? %{shift()} : @_;
-  my %args = Params( @params )->args(@args);
+    my @args = ref $_[0] ? %{ shift() } : @_;
+    my %args = Params(@params)->args(@args);
 
-  # 'validate' and 'escape' can be passed a regex object instead of a subref.
-  for my $arg ( qw( validate escape ) ) {
-    if( exists $args{$arg} && ref $args{$arg} eq 'Regexp' ) {
-      my $regex = $args{$arg};
-      $args{$arg} = sub { $_[0] =~ $regex; };
+    # 'validate' and 'escape' can be passed a regex object instead of a subref.
+    for my $arg (qw( validate escape )) {
+        if ( exists $args{$arg} && ref $args{$arg} eq 'Regexp' ) {
+            my $regex = $args{$arg};
+            $args{$arg} = sub { $_[0] =~ $regex; };
+        }
     }
-  }
 
-  # Error has to exist if 'validate' is set.
-  if( exists $args{validate} && ! exists $args{error} ) {
-    $args{error} = sub { q{} };
-  }
+    # Error has to exist if 'validate' is set.
+    if ( exists $args{validate} && !exists $args{error} ) {
+        $args{error} = sub { q{} };
+    }
 
-  # Error can be passed a string or a subref.
-  if( exists $args{error} && ref($args{error}) ne 'CODE' ) {
-    my $message = $args{error};
-    $args{error} = sub { $message };
-  }
+    # Error can be passed a string or a subref.
+    if ( exists $args{error} && ref( $args{error} ) ne 'CODE' ) {
+        my $message = $args{error};
+        $args{error} = sub { $message };
+    }
 
-  
-  return @args{ qw( message default tries validate error escape ) };
+    return @args{qw( message default tries validate error escape )};
 }
 
 sub _hooked_prompt {
-  my( $msg, $default, $tries, $validate_cb, $error_cb, $escape_cb )
-    = @_;
+    my ( $msg, $default, $tries, $validate_cb, $error_cb, $escape_cb ) = @_;
 
   # Short-circuit to the default, whatever it is if we start out with $tries==0.
-  return $default
-    if defined $tries && $tries == 0;
+    return $default
+      if defined $tries && $tries == 0;
 
-  while( $tries ) {
+    while ($tries) {
 
-    my $raw = IO::Prompt::Tiny::prompt( $msg, $default );
+        my $raw = IO::Prompt::Tiny::prompt( $msg, $default );
 
-    $tries--;
+        $tries--;
 
-    last if $escape_cb->($raw, $tries);
+        last if $escape_cb->( $raw, $tries );
 
-    return $raw if $validate_cb->($raw, $tries);
-    
-    if ( my $error_msg = $error_cb->($raw, $tries)
-         and IO::Prompt::Tiny::_is_interactive()
-         and ! $ENV{PERL_MM_USE_DEFAULT}
-    ) {
-      print $error_msg;
+        return $raw if $validate_cb->( $raw, $tries );
+
+        if (
+            my $error_msg = $error_cb->( $raw, $tries )
+            and IO::Prompt::Tiny::_is_interactive()    # Unpublished API!
+            and !$ENV{PERL_MM_USE_DEFAULT}
+          )
+        {
+            print $error_msg;
+        }
     }
-  }
 
-  return;  # If we arrived here, no valid input accepted.
+    return;    # If we arrived here, no valid input accepted.
 }
 
 1;
@@ -230,7 +241,7 @@ there is no default set, an empty string will be returned.
 =head4 C<default>
 
     $input = prompt( message => 'Favorite color', default => 'green' );
-    
+
 An optional default value that will be displayed as C<[default]> to the user,
 and that will be returned if the user hits enter without providing any input.
 
@@ -241,7 +252,7 @@ and that will be returned if the user hits enter without providing any input.
 
     $input = prompt( message  => 'Enter a word',
                      validate => qr/^\w+$/      );
-                     
+
     $input = prompt( message  => 'Enter a word',
                      validate => sub {
                        my( $raw, $tries_remaining ) = @_;

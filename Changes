@@ -1,4 +1,9 @@
 Revision history for List-BinarySearch
+
+0.03    October 11, 2012 15:09 PDT
+    - Fixed a test in 20-logic.t that was generating warnings under Perl 5.8.x.
+    - Took a closer look at Perl::Critic advice (made a couple of minor changes)
+
 0.02    October 11, 2012 10:28 PDT
     - Localized and unset the PERL_MM_USE_DEFAULT in two tests where
       smoke testers might have been running with it set, thus breaking
