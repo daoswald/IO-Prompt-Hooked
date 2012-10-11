@@ -6,7 +6,7 @@ use warnings;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use parent 'Exporter';
 

@@ -37,9 +37,12 @@ our $TEST_RESULT;
 # IO::Prompt::Tiny, with no changes.
 
 # Given a prompt message, a default, and known input, we get back the input.
-$TEST_INPUT = 'Good day.';
-is( prompt( 'Hello world.', 'Howdy' ),
-    'Good day.', 'Positional params return input.' );
+{
+	local $ENV{PERL_MM_USE_DEFAULT} = undef;
+	$TEST_INPUT = 'Good day.';
+	is( prompt( 'Hello world.', 'Howdy' ),
+		'Good day.', 'Positional params return input.' );
+}
 
 # Our positional $message parameter passed through to IO::Prompt::Tiny::prompt.
 is( $TEST_MESSAGE, 'Hello world.',
@@ -61,10 +64,12 @@ is( prompt( 'Hello world.' ), EMPTY_STRING,
 # Test basic features using named parameters.
 
 # Given a prompt message, a default, and known input, we get back the input.
-$TEST_INPUT = 'Good day.';
-is( prompt( message => 'Hello world.', default => 'Howdy' ),
-    'Good day.', 'Named params return input.' );
-
+{
+	local $ENV{PERL_MM_USE_DEFAULT} = undef;
+	$TEST_INPUT = 'Good day.';
+	is( prompt( message => 'Hello world.', default => 'Howdy' ),
+		'Good day.', 'Named params return input.' );
+}
 # Our positional $message parameter passed through to IO::Prompt::Tiny::prompt.
 is( $TEST_MESSAGE, 'Hello world.',
     'Named params pass the prompt message.' );
