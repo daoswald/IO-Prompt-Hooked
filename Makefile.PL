@@ -18,8 +18,9 @@ WriteMakefile(
         'ExtUtils::MakeMaker' => '6.62',    # Core, but updated version.
     },
     BUILD_REQUIRES => {
-        'Test::More' => '0.98',             # Core, but updated version.
-        'English'    => '0',                # Core.
+        'Test::More' 	=> '0.98',          # Core, but updated version.
+        'English'    	=> '0',             # Core.
+        'Capture::Tiny'	=> '0',
     },
     PREREQ_PM => {
         'Params::Smart'    => '0.08',
