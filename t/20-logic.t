@@ -2,8 +2,8 @@
 use strict;
 use warnings;
 use Test::More;
-use Capture::Tiny;
 use IO::Prompt::Hooked;
+
 use constant EMPTY_STRING => q{};
 
 our $TEST_INPUT;
