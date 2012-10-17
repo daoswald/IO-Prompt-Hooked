@@ -182,7 +182,7 @@ is( prompt( { message => 'hello', validate => qr/^n/i, tries => 0 } ),
         prompt(
             message  => 'hello',
             validate => qr/^n/i,
-            error    => '#test error',
+            error    => "# Test error. (shouldn't see)\n",
             tries    => 2
         ),
         undef,
@@ -196,7 +196,7 @@ is(
     prompt(
         message  => 'hello',
         validate => qr/^n/i,
-        error    => "#test error (expected)\n",
+        error    => "# Test error (expected, ok)\n",
         tries    => 1
     ),
     undef,
@@ -401,7 +401,7 @@ subtest 'POD subroutine examples' => sub {
         default  => 'y',
         validate => qr/^[yn]$/i,
         tries    => 5,
-        error    => "#Invalid input.(expected)\n"
+        error    => "# Invalid input.(expected, ok)\n"
     );
     is( $input, undef, 'tries example rejects bad input, and "tries" out.' );
 
@@ -412,7 +412,7 @@ subtest 'POD subroutine examples' => sub {
         default  => 'y',
         validate => qr/^[yn]$/i,
         tries    => 5,
-        error    => "#Invalid input.(expected)\n"
+        error    => "# Invalid input.(expected, ok)\n"
     );
     is( $input, 'y', 'tries example passes good input.' );
 
@@ -429,7 +429,7 @@ subtest 'POD subroutine examples' => sub {
               if $raw =~ qr/^[IVXLCDM]+$/i;
             return 'Age must be specified in base-10.'
               if $raw =~ qr/^\p{Hex}$/;
-            return "#Invalid input.(expected)\n";
+            return "# Invalid input.(expected, ok)\n";
         }
     );
     is( $input, undef, 'error example rejects bad input, invoking error cb.' );
