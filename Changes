@@ -1,5 +1,10 @@
 Revision history for List-BinarySearch
 
+0.04    October 19, 2012 01:35 PDT
+    - Changed how _is_interactive() is imported into module (tracking
+      down an elusive *BSD test suite FAIL).
+    - Added several tests to t/20-logic.t to try to track down the bug.
+    - Tests added to bring coverage to 96.9%.
 0.03    October 11, 2012 15:09 PDT
     - Fixed a test in 20-logic.t that was generating warnings under 
       Perl 5.8.x.

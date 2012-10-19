@@ -6,12 +6,15 @@ use warnings;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use parent 'Exporter';
 
 our @EXPORT    = qw( prompt   );
 our @EXPORT_OK = qw( terminate_input );
+
+# Steal a subroutine from IO::Prompt::Tiny (Not published in the API)!
+*_is_interactive = \&IO::Prompt::Tiny::_is_interactive; 
 
 # Template for Params::Smart validation.
 my @params = (
@@ -90,7 +93,7 @@ sub _hooked_prompt {
 
         if (
             my $error_msg = $error_cb->( $raw, $tries )
-            and IO::Prompt::Tiny::_is_interactive()    # Unpublished API!
+            and _is_interactive()
             and !$ENV{PERL_MM_USE_DEFAULT}
           )
         {
@@ -356,12 +359,12 @@ prompting interactively.
 This module is expected to work exactly like IO::Prompt::Tiny when invoked in
 positional parameter (non-named-parameter) mode.  For regression testing the
 test suite validates behavior against the IO::Prompt::Tiny tests.  Overall
-coverage is just under 95%.
+test coverage is approximately 97%.
 
 =head1 DEPENDENCIES
 
 This module has two non-core dependencies: L<Params::Smart>, and
-L<IO::Prompt::Tiny>.
+L<IO::Prompt::Tiny>.  The test suite requires L<Capture::Tiny>.
 
 =head1 INCOMPATIBILITIES
 

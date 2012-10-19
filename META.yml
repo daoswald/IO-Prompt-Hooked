@@ -28,4 +28,4 @@ requires:
   Params::Smart: 0.08
   parent: 0.225
   perl: 5.006000
-version: 0.03
+version: 0.04
