@@ -11,6 +11,13 @@ our $TEST_MESSAGE;
 our $TEST_DEFAULT;
 our $TEST_RESULT;
 
+local $ENV{PERL_MM_USE_DEFAULT} = 0; # Tests self-manage interactivity.
+
+{
+  no warnings 'redefine';
+  *IO::Prompt::Hooked::_is_interactive = sub { 1 };
+}
+
 # Override IO::Prompt::Tiny::prompt so that we don't need to capture input and
 # output.  We're going to take the leap of faith that IO::Prompt::tiny already
 # does what it should.  We only want to test the functionality we're layering
@@ -109,23 +116,26 @@ is( prompt( message => 'Hello world.' ),
     is( $TEST_DEFAULT, 'world', 'Named parameters pass the default properly.' );
     is( $test_tries > 0, 1,  'error subref called on failed attempts.' );
     is( $test_tries,     50, 'Stopped after proper number of attempts.' );
-    is( $TEST_RESULT,    1,  'Error callback invoked.' );
+    is( $TEST_RESULT,    1,  'Error callback invoked.' ); # Test 16.
 
 }
 
-# Test escape mechanism.
+# Test escape mechanism ( Test 17 ).
 
-$TEST_INPUT = "escape";
-is(
-    prompt(
-        message  => 'Hello',
-        default  => 'world',
-        validate => sub { 0 },
-        escape   => sub { $_[0] =~ qr/\bescape\b/ },
-    ),
-    undef,
-    'Escape bypasses validation and returns undef.'
-);
+{
+  $TEST_INPUT = "escape";
+  local $ENV{PERL_MM_USE_DEFAULT} = 0;
+  is(
+      prompt(
+          message  => 'Hello from Test 17.',
+          default  => 'world',
+          validate => sub { 1 },
+          escape   => sub { $_[0] =~ qr/\bescape\b/ },
+      ),
+      undef,
+      'Escape bypasses validation and returns undef.'
+  );
+}
 
 undef $TEST_INPUT;
 is(
@@ -248,14 +258,14 @@ is(
     no warnings 'redefine';
     local *IO::Prompt::Hooked::_is_interactive = sub { 0 };
     is(
-		prompt(
-			validate => qr /^n/,
-			error    => "Test error (shouldn't see)\n",
-			tries    => 1,
-		),
-		undef,
-		"Shouldn't print when non-interactive (_is_interactive & ENV)."
-	);
+    prompt(
+      validate => qr /^n/,
+      error    => "Test error (shouldn't see)\n",
+      tries    => 1,
+    ),
+    undef,
+    "Shouldn't print when non-interactive (_is_interactive & ENV)."
+  );
 }
 
 {
@@ -278,14 +288,14 @@ is(
     no warnings 'redefine';
     local *IO::Prompt::Hooked::_is_interactive = sub {1};
     is(
-		prompt(
-			validate => qr /^n/,
-			error    => "# Test error (expected).\n",
-			tries    => 1,
-		),
-		undef,
-		"Generate a printing test error."
-	);
+    prompt(
+      validate => qr /^n/,
+      error    => "# Test error (expected).\n",
+      tries    => 1,
+    ),
+    undef,
+    "Generate a printing test error."
+  );
 }
 
 

@@ -1,12 +1,14 @@
 #!/usr/bin/env perl
 package IO::Prompt::Hooked;
 
+use 5.006000;
 use strict;
 use warnings;
+use Carp;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use parent 'Exporter';
 
@@ -14,7 +16,7 @@ our @EXPORT    = qw( prompt   );
 our @EXPORT_OK = qw( terminate_input );
 
 # Steal a subroutine from IO::Prompt::Tiny (Not published in the API)!
-*_is_interactive = \&IO::Prompt::Tiny::_is_interactive; 
+*_is_interactive = \&IO::Prompt::Tiny::_is_interactive;
 
 # Template for Params::Smart validation.
 my @params = (
@@ -27,7 +29,12 @@ my @params = (
         name_only => 1,
         default   => sub { 1 }
     },
-    { name => 'error', required => 0, name_only => 1 },
+    {
+        name      => 'error',
+        required  => 0,
+        name_only => 1,
+        default   => sub { q{} }
+    },
     {
         name      => 'escape',
         required  => 0,
@@ -54,21 +61,23 @@ sub _unpack_prompt_params {
 
     # 'validate' and 'escape' can be passed a regex object instead of a subref.
     for my $arg (qw( validate escape )) {
-        if ( exists $args{$arg} && ref $args{$arg} eq 'Regexp' ) {
+        if ( ref $args{$arg} eq 'Regexp' ) {
             my $regex = $args{$arg};
             $args{$arg} = sub { $_[0] =~ $regex; };
         }
     }
 
-    # Error has to exist if 'validate' is set.
-    if ( exists $args{validate} && !exists $args{error} ) {
-        $args{error} = sub { q{} };
-    }
-
     # Error can be passed a string or a subref.
-    if ( exists $args{error} && ref( $args{error} ) ne 'CODE' ) {
+    if ( ref( $args{error} ) ne 'CODE' ) {
         my $message = $args{error};
         $args{error} = sub { $message };
+    }
+
+    # If we're not interactive, make sure there's a tries limit.
+    if ( ( $ENV{PERL_MM_USE_DEFAULT} || !_is_interactive() )
+        && $args{tries} < 0 )
+    {
+        $args{tries} = 1;
     }
 
     return @args{qw( message default tries validate error escape )};
@@ -91,11 +100,10 @@ sub _hooked_prompt {
 
         return $raw if $validate_cb->( $raw, $tries );
 
-        if (
-            my $error_msg = $error_cb->( $raw, $tries )
+        if ( my $error_msg =
+                $error_cb->( $raw, $tries )
             and _is_interactive()
-            and !$ENV{PERL_MM_USE_DEFAULT}
-          )
+            and !$ENV{PERL_MM_USE_DEFAULT} )
         {
             print $error_msg;
         }
@@ -349,6 +357,19 @@ to force C<prompt()> to return C<undef> immediately.  This is essentially a
 means of placing "C<last>" into your callback without generating a warning about
 returning from a subroutine via C<last>.  It's a dirty trick, but could prove
 useful.
+
+=head1 CAVEATS & WARNINGS
+
+Keep in mind that prompting behaves differently in a non-interactive
+environment.  In a non-interactive environment, the default will be used.  If
+no default is set, C<undef> will be returned.  If the default matches the
+C<escape>, undef will be returned.  Next, if default fails to validate, then
+C<tries> will count down until zero is reached, at which time C<undef> will be
+returned.
+
+If non-interactive mode is detected, and "C<tries>" isn't set to a positive
+limit, a C<tries> limit of one is automatically set to prevent endless looping
+in cases where validation doesn't match the default.
 
 =head1 CONFIGURATION AND ENVIRONMENT
 

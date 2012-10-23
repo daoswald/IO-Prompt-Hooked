@@ -1,5 +1,14 @@
 Revision history for List-BinarySearch
 
+0.05    October 22, 2012 16:15 PDT
+    - Set default number of tries if tries isn't already set to a positive
+      number in non-interactive mode.  This fixes the endless loop condition
+      that could occur if default fails to validate in non-interactive mode.
+    - Tests now manage interactive mode detection more directly.
+    - POD now explains new "tries" bevavior in non-interactive mode.
+    - Param validation simplified.
+    - Devel::Cover now reports 100% coverage.
+    - Set minimum Perl version to 5.6.0.
 0.04    October 19, 2012 01:35 PDT
     - Changed how _is_interactive() is imported into module (tracking
       down an elusive *BSD test suite FAIL).
