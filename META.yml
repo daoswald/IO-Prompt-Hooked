@@ -22,10 +22,10 @@ no_index:
 provides:
   IO::Prompt::Hooked:
     file: lib/IO/Prompt/Hooked.pm
-    version: 0.05
+    version: 0.06
 requires:
   IO::Prompt::Tiny: 0.001
   Params::Smart: 0.08
   parent: 0.225
   perl: 5.006000
-version: 0.05
+version: 0.06

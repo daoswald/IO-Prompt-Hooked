@@ -8,7 +8,7 @@ use Carp;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use parent 'Exporter';
 
