@@ -58,6 +58,18 @@ is( $TEST_MESSAGE, 'Hello world.',
 # Our positional default parameter passed through to IO::Prompt::Tiny::prompt.
 is( $TEST_DEFAULT, 'Howdy', 'Positional params pass the default.' );
 
+
+# Verify that if no message is specified, or if message is undefined,
+# we get an empty string message.
+{
+    local $ENV{PERL_MM_USE_DEFAULT} = undef;
+    $TEST_INPUT = 'Hello world';
+    prompt( message => undef );
+    is( $TEST_MESSAGE, '', 
+        'No message specified: default to empty string.' 
+    );
+}
+
 # If user just hits enter, use the default.
 $TEST_INPUT = EMPTY_STRING;
 is( prompt( 'Hello world.', 'Howdy' ),

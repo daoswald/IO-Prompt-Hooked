@@ -8,7 +8,7 @@ use Carp;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use parent 'Exporter';
 
@@ -20,7 +20,7 @@ our @EXPORT_OK = qw( terminate_input );
 
 # Template for Params::Smart validation.
 my @params = (
-    { name => 'message', required => 0, },
+    { name => 'message', required => 0, default => '' },
     { name => 'default', required => 0, },
     { name => 'tries',   required => 0, name_only => 1, default => -1 },
     {
@@ -59,7 +59,9 @@ sub _unpack_prompt_params {
     my @args = ref $_[0] ? %{ shift() } : @_;
     my %args = Params(@params)->args(@args);
 
-    # 'validate' and 'escape' can be passed a regex object instead of a subref.
+    $args{message} = defined $args{message} ? $args{message} : '';
+    # 'validate' and 'escape' can be passed a regex object instead of 
+    # a subref.
     for my $arg (qw( validate escape )) {
         if ( ref $args{$arg} eq 'Regexp' ) {
             my $regex = $args{$arg};

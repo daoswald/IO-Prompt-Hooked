@@ -1,13 +1,21 @@
 Revision history for Perl module IO::Prompt::Hooked
 
+0.07 2012-11-08
+  - If 'message' parameter is unspecified or set to undef, use an empty
+    string instead so that we don't cause IO::Prompt::Tiny::prompt to
+    die.
+  - Added tests to verify graceful handling of no message.
+
 0.06 2012-11-02
   - "Changes" is now W3CDTF and CPAN::Changes::Spec compliant.
-  - Added author only RELEASE_TESTING test: t/09-changes.t to verify compliance.
+  - Added author only RELEASE_TESTING test: t/09-changes.t to verify 
+    compliance.
 
 0.05 2012-10-22
   - Set default number of tries if tries isn't already set to a positive
-    number in non-interactive mode.  This fixes the endless loop condition
-    that could occur if default fails to validate in non-interactive mode.
+    number in non-interactive mode.  This fixes the endless loop 
+    condition that could occur if default fails to validate in 
+    non-interactive mode.
   - Tests now manage interactive mode detection more directly.
   - POD now explains new "tries" bevavior in non-interactive mode.
   - Param validation simplified.
