@@ -4,11 +4,10 @@ package IO::Prompt::Hooked;
 use 5.006000;
 use strict;
 use warnings;
-use Carp;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use parent 'Exporter';
 
@@ -244,6 +243,8 @@ Unless otherwise mentioned, all named parameters are optional.
 
 =head4 C<message>
 
+(Optional; empty string used if omitted.)
+    
     $input = prompt( message => 'Enter your first name' );
 
 The message that will be displayed to the user ahead of the input cursor.  If
@@ -251,13 +252,21 @@ the session is not interactive, or if the C<PERL_MM_USE_DEFAULT> environment
 variable is set, output will be suppressed, and the default will be used.  If
 there is no default set, an empty string will be returned.
 
+If C<message> is omitted an empty string is used.  This is different from
+L<IO::Prompt::Tiny>'s C<prompt>, as that function throws an exception if no
+message is passed.
+
 =head4 C<default>
+
+(Optional, but usually preferable.)
 
     $input = prompt( message => 'Favorite color', default => 'green' );
 
 An optional default value that will be displayed as C<[default]> to the user,
 and that will be returned if the user hits enter without providing any input.
 
+Be sure to provide a meaningful default for scripts that might run
+non-interactively.
 
 =head4 C<validate>
 
@@ -357,7 +366,7 @@ flexibility.
 Insert a call to C<IO::Prompt::Hooked::terminate_input()> inside of any callback
 to force C<prompt()> to return C<undef> immediately.  This is essentially a
 means of placing "C<last>" into your callback without generating a warning about
-returning from a subroutine via C<last>.  It's a dirty trick, but could prove
+returning from a subroutine via C<last>.  It's a dirty trick, but might be
 useful.
 
 =head1 CAVEATS & WARNINGS
@@ -380,9 +389,11 @@ C<PERL_MM_USE_DEFAULT> may be set to prevent L<IO::Prompt::Hooked> from
 prompting interactively.
 
 This module is expected to work exactly like IO::Prompt::Tiny when invoked in
-positional parameter (non-named-parameter) mode.  For regression testing the
-test suite validates behavior against the IO::Prompt::Tiny tests.  Overall
-test coverage is approximately 97%.
+positional parameter (non-named-parameter) mode except that it uses an empty
+string for the prompt message if no prompt message is supplied as a parameter,
+rather than throwing an exception.  For regression testing the test suite
+validates behavior against the IO::Prompt::Tiny tests.  Overall test coverage
+for IO::Prompt::Hooked is 100%.
 
 =head1 DEPENDENCIES
 

@@ -18,9 +18,9 @@ WriteMakefile(
         'ExtUtils::MakeMaker' => '6.62',    # Core, but updated version.
     },
     BUILD_REQUIRES => {
-        'Test::More' 	=> '0.98',          # Core, but updated version.
-        'English'    	=> '0',             # Core.
-        'Capture::Tiny'	=> '0',
+        'Test::More'    => '0.98',          # Core, but updated version.
+        'English'       => '0',             # Core. Used in tests.
+        'Capture::Tiny' => '0',             # Used in testing.
     },
     PREREQ_PM => {
         'Params::Smart'    => '0.08',
@@ -31,7 +31,7 @@ WriteMakefile(
         provides => {
             'IO::Prompt::Hooked' => {
                 file    => 'lib/IO/Prompt/Hooked.pm',
-                version => '0.06',
+                version => '0.08',
             },
         },
     },

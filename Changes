@@ -1,5 +1,12 @@
 Revision history for Perl module IO::Prompt::Hooked
 
+0.08 2012-11-08
+  - Fix distribution metadata to specify proper module version.
+  - Fixed t/09-changes.t for Perl::Critic compliance.
+  - Removed 'Carp' dependency; no exceptions thrown explicitly by
+    IO::Prompt::Hooked. (IO::Prompt::Tiny could still throw).
+  - Minor POD revisions.
+
 0.07 2012-11-08
   - If 'message' parameter is unspecified or set to undef, use an empty
     string instead so that we don't cause IO::Prompt::Tiny::prompt to
