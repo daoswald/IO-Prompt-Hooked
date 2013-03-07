@@ -1,5 +1,8 @@
 Revision history for Perl module IO::Prompt::Hooked
 
+0.09 2013-03-07
+  - Fixed an example in the POD's SYNOPSIS.
+
 0.08 2012-11-08
   - Fix distribution metadata to specify proper module version.
   - Fixed t/09-changes.t for Perl::Critic compliance.

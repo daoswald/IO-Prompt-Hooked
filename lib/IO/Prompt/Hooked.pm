@@ -7,7 +7,7 @@ use warnings;
 use Params::Smart;
 use IO::Prompt::Tiny ();
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 use parent 'Exporter';
 
@@ -175,9 +175,9 @@ IO::Prompt::Hooked - Simple prompting with validation hooks.
       tries    => 5,
       error    => sub {
         my( $raw, $tries ) = @_;
-        if( $raw !~ m/^[yn]/ && $tries < 3 ) {
+        if( $raw !~ m/^[yn]/ && $tries > 3 ) {
           print "You're not reading the instructions!  Input terminated\n";
-          IO::Prompt::Hooked::terminate_input();
+          IO::Prompt::Hooked::terminate_input(); # Think 'last', but dirtier.
         }
         return "Must enter a single character, 'y' or 'n'";
       },
