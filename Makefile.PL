@@ -31,7 +31,7 @@ WriteMakefile(
         provides => {
             'IO::Prompt::Hooked' => {
                 file    => 'lib/IO/Prompt/Hooked.pm',
-                version => '0.09',
+                version => '0.10',
             },
         },
     },
