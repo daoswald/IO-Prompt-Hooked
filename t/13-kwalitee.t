@@ -10,14 +10,20 @@ use Test::More;
 if ( ! $ENV{RELEASE_TESTING} ) {
   my $msg = 'Author Test: Set $ENV{RELEASE_TESTING} to a true value to run.';
   plan( skip_all => $msg );
+  done_testing();
+  exit(0);
 }
 
 
 eval { require Test::Kwalitee; Test::Kwalitee->import() }; ## no critic (eval)
 
-plan( skip_all => 'Test::Kwalitee not installed; skipping' ) if $@;
+if( $@ ) {
+  plan( skip_all => 'Test::Kwalitee not installed; skipping' );
+  done_testing();
+  exit(0);
+}
 
-done_testing();
+#done_testing();
 
 # Clean up.  I haven't traced out where this is getting created, but we
 # certainly don't need to leave it behind as clutter.
